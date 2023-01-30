@@ -1,7 +1,9 @@
-//! A build dependency for running the correct autotools commands to build a native library
+//! A build dependency for running the correct autotools commands to build a
+//! native library
 //!
-//! This crate provides the facilities to setup the build system and build native libraries
-//! that leverage `autotools` or `configure & make` workalike scripts.
+//! This crate provides the facilities to setup the build system and build
+//! native libraries that leverage `autotools` or `configure & make` workalike
+//! scripts.
 //!
 //! ## Installation
 //!
@@ -72,16 +74,17 @@ enum Kind {
 /// machine; otherwise "target" will coincide with "host".
 ///
 /// Hence Rust's `host` corresponds to Gnu autotools' "build" and Rust's
-/// `target` corresponds to their "host" (though the relevant names will sometimes
-/// differ slightly).
+/// `target` corresponds to their "host" (though the relevant names will
+/// sometimes differ slightly).
 ///
-/// The `host` and `target` methods on this package's `autotools::Config` structure (as well as
-/// the `$HOST` and `$TARGET` variables set by cargo) are understood with their
-/// Rust meaning.
+/// The `host` and `target` methods on this package's `autotools::Config`
+/// structure (as well as the `$HOST` and `$TARGET` variables set by cargo) are
+/// understood with their Rust meaning.
 ///
-/// When cross-compiling, we try to calculate automatically what Gnu autotools will expect for its
-/// "host" value, and supply that to the `configure` script using a `--host="..."` argument. If the
-/// auto-calculation is incorrect, you can override it with the `config_option` method, like this:
+/// When cross-compiling, we try to calculate automatically what Gnu autotools
+/// will expect for its "host" value, and supply that to the `configure` script
+/// using a `--host="..."` argument. If the auto-calculation is incorrect, you
+/// can override it with the `config_option` method, like this:
 ///
 /// ```no_run
 /// use autotools;
@@ -117,8 +120,8 @@ pub struct Config {
     use_destdir: bool,
 }
 
-/// Builds the native library rooted at `path` with the default configure options.
-/// This will return the directory in which the library was installed.
+/// Builds the native library rooted at `path` with the default configure
+/// options. This will return the directory in which the library was installed.
 ///
 /// # Examples
 ///
@@ -132,7 +135,6 @@ pub struct Config {
 /// println!("cargo:rustc-link-search=native={}", dst.display());
 /// println!("cargo:rustc-link-lib=static=foo");
 /// ```
-///
 pub fn build<P: AsRef<Path>>(path: P) -> PathBuf {
     Config::new(path.as_ref()).build()
 }
@@ -142,7 +144,8 @@ impl Config {
     /// at the path `path`.
     pub fn new<P: AsRef<Path>>(path: P) -> Config {
         // test that `sh` is present and does what we want--see `new_command` below
-        // sidestep the whole "execute permission" thing by only checking shebang functionality on Windows
+        // sidestep the whole "execute permission" thing by only checking shebang
+        // functionality on Windows
         let arg: String = if cfg!(windows) {
             let out_dir = env::var_os("OUT_DIR").expect("missing OUT_DIR");
             let path = PathBuf::from(out_dir).join("test.sh");
@@ -300,8 +303,8 @@ impl Config {
     /// that this library already passes.
     ///
     /// Default flags for the chosen compiler have lowest priority, then any
-    /// flags from the environment variable `$CXXFLAGS`, then any flags specified
-    /// with this method.
+    /// flags from the environment variable `$CXXFLAGS`, then any flags
+    /// specified with this method.
     pub fn cxxflag<P: AsRef<OsStr>>(&mut self, flag: P) -> &mut Config {
         self.cxxflags.push(" ");
         self.cxxflags.push(flag.as_ref());
@@ -355,14 +358,14 @@ impl Config {
     /// Configure an environment variable for the `configure && make` processes
     /// spawned by this crate in the `build` step.
     ///
-    /// If you want to set `$CFLAGS`, `$CXXFLAGS`, or `$LDFLAGS`, consider using the
-    /// [cflag](#method.cflag),
+    /// If you want to set `$CFLAGS`, `$CXXFLAGS`, or `$LDFLAGS`, consider using
+    /// the [cflag](#method.cflag),
     /// [cxxflag](#method.cxxflag), or
     /// [ldflag](#method.ldflag)
     /// methods instead, which will append to any external
     /// values. Setting those environment variables here will overwrite the
-    /// external values, and will also discard any flags determined by the chosen
-    /// compiler.
+    /// external values, and will also discard any flags determined by the
+    /// chosen compiler.
     ///
     /// `autotools::Config` will automatically pass `$CC` and `$CXX` values to
     /// the `configure` script based on the chosen compiler. Setting those
@@ -371,8 +374,7 @@ impl Config {
     pub fn env<K, V>(&mut self, key: K, value: V) -> &mut Config
     where
         K: AsRef<OsStr>,
-        V: AsRef<OsStr>,
-    {
+        V: AsRef<OsStr>, {
         self.env
             .push((key.as_ref().to_owned(), value.as_ref().to_owned()));
         self
@@ -386,7 +388,8 @@ impl Config {
 
     /// Build the given make target.
     ///
-    /// If this function is not called, the build will default to `make install`.
+    /// If this function is not called, the build will default to `make
+    /// install`.
     pub fn make_target(&mut self, make_target: &str) -> &mut Config {
         self.make_targets
             .get_or_insert_with(Vec::new)
@@ -396,9 +399,9 @@ impl Config {
 
     /// Build the library in-source.
     ///
-    /// This is generally not recommended, but can be required for libraries that
-    /// make extensive use of nested Makefiles, which cannot be included in
-    /// out-of-source builds.
+    /// This is generally not recommended, but can be required for libraries
+    /// that make extensive use of nested Makefiles, which cannot be
+    /// included in out-of-source builds.
     pub fn insource(&mut self, build_insource: bool) -> &mut Config {
         self.build_insource = build_insource;
         self
@@ -497,10 +500,11 @@ impl Config {
         }
 
         if cfg!(windows) {
-            // `configure` is hardcoded to fail on characters it deems "unsafe" found in a path--
-            // including '\', i.e. the Windows path separator. It will happily pull a Windows-style path
-            // for `srcdir` on its own, and then immediately complain about it. Hopefully we're building
-            // in a Cygwin/MSYS environment that can give us a path that will make it happy.
+            // `configure` is hardcoded to fail on characters it deems "unsafe" found in a
+            // path-- including '\', i.e. the Windows path separator. It will
+            // happily pull a Windows-style path for `srcdir` on its own, and
+            // then immediately complain about it. Hopefully we're building in a
+            // Cygwin/MSYS environment that can give us a path that will make it happy.
             let cygpath = Command::new("cygpath")
                 .args(["--unix", "--codepage=UTF8"])
                 .args([&dst, &self.path])
@@ -752,15 +756,17 @@ fn run(cmd: &mut Command, program: &str) {
     }
 }
 
-// Windows users cannot execute `./configure` (shell script) or `autoreconf` (Perl script) directly
-// like everyone else in the world can. However, the Cygwin compatibility layer handles the task of
-// reading the shebang of any file an application tries to "execute" (in lieu of a kernel doing the same),
-// and transparently invokes the referenced executable just like a Unix user would expect.
+// Windows users cannot execute `./configure` (shell script) or `autoreconf`
+// (Perl script) directly like everyone else in the world can. However, the
+// Cygwin compatibility layer handles the task of reading the shebang of any
+// file an application tries to "execute" (in lieu of a kernel doing the same),
+// and transparently invokes the referenced executable just like a Unix user
+// would expect.
 //
 // Long story short, this function assumes two things:
 // 1. `sh` exists on PATH (kind of hard to run `./configure` without that, huh)
-// 2. If on Windows, `sh` lives in magical Cygwin land and can parse shebangs for us (thus preserving
-//    functionality between Windows and everyone else)
+// 2. If on Windows, `sh` lives in magical Cygwin land and can parse shebangs
+// for us (thus preserving    functionality between Windows and everyone else)
 // Prepare a process::Command wherein the program is invoked within `sh`.
 // The presence of `sh` is verified in Config::new above.
 fn new_command<S: AsRef<OsStr>>(program: S) -> Command {
