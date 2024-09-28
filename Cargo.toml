@@ -10,6 +10,7 @@ description = """
 A build dependency to build native libraries that use configure&make-style build systems
 """
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 cc = "1.0.3"
