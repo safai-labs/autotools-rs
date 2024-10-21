@@ -374,7 +374,8 @@ impl Config {
     pub fn env<K, V>(&mut self, key: K, value: V) -> &mut Config
     where
         K: AsRef<OsStr>,
-        V: AsRef<OsStr>, {
+        V: AsRef<OsStr>,
+    {
         self.env
             .push((key.as_ref().to_owned(), value.as_ref().to_owned()));
         self
@@ -702,8 +703,7 @@ impl Config {
                         || cfg!(target_os = "openbsd")
                         || cfg!(target_os = "netbsd")
                         || cfg!(target_os = "freebsd")
-                        || cfg!(target_os = "bitrig")
-                        || cfg!(target_os = "dragonflybsd")) =>
+                        || cfg!(target_os = "dragonfly")) =>
                 {
                     makeflags = Some(s.clone())
                 }
